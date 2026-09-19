@@ -1,0 +1,16 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "HDaBGU6r1Wje9ide3jkN3"
+uri = "file://exports/edupath-project-current.zip"
+type = "unspecified"
+title = "EduPath project source archive"
+description = "Current EduPath frontend, API server, shared API contracts/generated clients, workspace configuration, Replit configuration, and development scripts. Dependency folders, build output, caches, logs, and environment files are excluded."
+logical_id = "55c510a3-47be-4e73-aba3-68d1f6e0341d"
+content_hash = "sha256:b58580596ebfbfc96092d5093767682bf8a6237ffdcc2aaff9b6215c9fb892c3"
+size = 173616
+mtime_ms = 1789839253904
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:a3ed0be4-8c37-4fc2-a524-a3fb59837185/55c510a3-47be-4e73-aba3-68d1f6e0341d/0c8f676e-63b6-4324-b376-9e2b884b1086"
+storage_version_token = "1789839261675311"
+content_type = "application/octet-stream"
