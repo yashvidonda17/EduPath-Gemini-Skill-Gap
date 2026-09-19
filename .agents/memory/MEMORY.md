@@ -1,0 +1,1 @@
+- [Gemini model availability](gemini-model-availability.md) — keep model selection and transient fallback logic server-side because names and quotas can change.

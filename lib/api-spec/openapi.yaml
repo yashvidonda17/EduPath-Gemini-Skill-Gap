@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: ai
+    description: AI-powered career learning operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,50 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /skill-gap-analysis:
+    post:
+      operationId: analyzeSkillGap
+      tags: [ai]
+      summary: Analyze a learner's skills against a target career
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SkillGapAnalysisInput"
+      responses:
+        "200":
+          description: AI-generated skill gap analysis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SkillGapAnalysis"
+        "400":
+          description: Invalid profile
+        "500":
+          description: AI analysis failed
+  /learning-roadmap:
+    post:
+      operationId: generateLearningRoadmap
+      tags: [ai]
+      summary: Generate a personalized learning roadmap from skill gaps
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LearningRoadmapInput"
+      responses:
+        "200":
+          description: AI-generated learning roadmap
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LearningRoadmap"
+        "400":
+          description: Invalid skill gap input
+        "500":
+          description: Roadmap generation failed
 components:
   schemas:
     HealthStatus:
@@ -33,4 +79,155 @@ components:
           type: string
       required:
         - status
+    LearnerProfile:
+      type: object
+      properties:
+        targetCareer:
+          type: string
+          minLength: 1
+        skills:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        experience:
+          type: string
+          minLength: 1
+        weeklyHours:
+          type: string
+          minLength: 1
+        learningGoal:
+          type: string
+          minLength: 1
+      required:
+        - targetCareer
+        - skills
+        - experience
+        - weeklyHours
+        - learningGoal
+    SkillGapAnalysisInput:
+      allOf:
+        - $ref: "#/components/schemas/LearnerProfile"
+    SkillRequirement:
+      type: object
+      properties:
+        name:
+          type: string
+        importance:
+          type: string
+          enum: [Critical, High, Medium, Low]
+      required:
+        - name
+        - importance
+    AcquiredSkill:
+      type: object
+      properties:
+        name:
+          type: string
+        importance:
+          type: string
+          enum: [Critical, High, Medium, Low]
+        evidence:
+          type: string
+      required:
+        - name
+        - importance
+        - evidence
+    MissingSkill:
+      type: object
+      properties:
+        name:
+          type: string
+        importance:
+          type: string
+          enum: [Critical, High, Medium, Low]
+        explanation:
+          type: string
+      required:
+        - name
+        - importance
+        - explanation
+    SkillGapAnalysis:
+      type: object
+      properties:
+        targetCareer:
+          type: string
+        roleRequirements:
+          type: array
+          items:
+            $ref: "#/components/schemas/SkillRequirement"
+        acquiredSkills:
+          type: array
+          items:
+            $ref: "#/components/schemas/AcquiredSkill"
+        missingSkills:
+          type: array
+          items:
+            $ref: "#/components/schemas/MissingSkill"
+        matchPercentage:
+          type: integer
+          minimum: 0
+          maximum: 100
+        explanation:
+          type: string
+      required:
+        - targetCareer
+        - roleRequirements
+        - acquiredSkills
+        - missingSkills
+        - matchPercentage
+        - explanation
+    LearningRoadmapInput:
+      type: object
+      properties:
+        profile:
+          $ref: "#/components/schemas/LearnerProfile"
+        skillGaps:
+          type: array
+          items:
+            $ref: "#/components/schemas/MissingSkill"
+          minItems: 1
+      required:
+        - profile
+        - skillGaps
+    RoadmapStep:
+      type: object
+      properties:
+        title:
+          type: string
+        focusSkill:
+          type: string
+        priority:
+          type: string
+          enum: [Critical, High, Medium, Low]
+        duration:
+          type: string
+        actions:
+          type: array
+          items:
+            type: string
+        outcome:
+          type: string
+      required:
+        - title
+        - focusSkill
+        - priority
+        - duration
+        - actions
+        - outcome
+    LearningRoadmap:
+      type: object
+      properties:
+        targetCareer:
+          type: string
+        summary:
+          type: string
+        steps:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoadmapStep"
+      required:
+        - targetCareer
+        - summary
+        - steps
 
