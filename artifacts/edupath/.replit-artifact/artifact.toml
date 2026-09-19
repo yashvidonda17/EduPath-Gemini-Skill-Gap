@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "EduPath"
+description = "A personalized AI learning journey that analyzes a learner's current skills against a target career and generates a focused roadmap."
+version = "1.0.0"
+id = "artifacts/edupath"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 26172
+
+[services.development]
+run = "pnpm --filter @workspace/edupath run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/edupath", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/edupath/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "26172"
+BASE_PATH = "/"
