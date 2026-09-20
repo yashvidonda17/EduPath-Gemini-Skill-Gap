@@ -17,9 +17,19 @@ import {
   Zap,
   Award,
   BookOpen,
+  ExternalLink,
   Loader2,
   AlertCircle
 } from 'lucide-react';
+
+function isValidResourceUrl(value) {
+  try {
+    const url = new URL(value);
+    return (url.protocol === 'http:' || url.protocol === 'https:') && !url.username && !url.password;
+  } catch {
+    return false;
+  }
+}
 
 export default function SkillGapAnalysis({ userProfile, onEditProfile, onGenerateRoadmap }) {
   const [analysis, setAnalysis] = useState(null);
@@ -542,15 +552,20 @@ export default function SkillGapAnalysis({ userProfile, onEditProfile, onGenerat
                       <h4 style={{ fontSize: '1rem', color: '#fff' }}>{section.title}</h4>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.75rem' }}>
-                      {section.items.map((item, itemIndex) => (
-                        <div key={`${item.skill}-${item.title}-${itemIndex}`} style={{
+                      {section.items.map((item, itemIndex) => {
+                        const cardKey = `${item.skill}-${item.title}-${itemIndex}`;
+                        const resourceUrl = section.key === 'resources' && isValidResourceUrl(item.url) ? item.url : null;
+                        const card = (
+                          <div style={{
                           padding: '1rem',
                           background: 'rgba(255,255,255,0.03)',
                           border: '1px solid var(--border-light)',
                           borderRadius: 'var(--radius-md)'
                         }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem' }}>
-                            <strong style={{ color: '#fff', fontSize: '0.9rem', lineHeight: 1.35 }}>{item.title}</strong>
+                            <strong style={{ color: '#fff', fontSize: '0.9rem', lineHeight: 1.35 }}>
+                              {item.title} {resourceUrl && <ExternalLink size={13} style={{ verticalAlign: '-2px', marginLeft: '0.2rem' }} />}
+                            </strong>
                             <span className="badge" style={{ fontSize: '0.68rem', whiteSpace: 'nowrap' }}>{item.difficulty}</span>
                           </div>
                           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', margin: '0.65rem 0 0.5rem', color: '#a5b4fc', fontSize: '0.75rem' }}>
@@ -561,8 +576,24 @@ export default function SkillGapAnalysis({ userProfile, onEditProfile, onGenerat
                           <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', lineHeight: 1.5 }}>
                             {item.expectedOutcome}
                           </p>
-                        </div>
-                      ))}
+                          </div>
+                        );
+
+                        return resourceUrl ? (
+                          <a
+                            key={cardKey}
+                            href={resourceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={`Open ${item.title} resource in a new tab`}
+                            style={{ display: 'block', color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
+                          >
+                            {card}
+                          </a>
+                        ) : (
+                          <React.Fragment key={cardKey}>{card}</React.Fragment>
+                        );
+                      })}
                     </div>
                   </div>
                 )

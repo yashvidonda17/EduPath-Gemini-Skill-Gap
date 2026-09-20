@@ -9,6 +9,7 @@ import {
 const router: IRouter = Router();
 const GEMINI_MODELS = ["gemini-3.6-flash", "gemini-3-flash-preview"];
 const MAX_RESUME_BYTES = 8 * 1024 * 1024;
+const RESOURCE_URL_TIMEOUT_MS = 5000;
 
 type GeminiResponse = {
   candidates?: Array<{
@@ -116,17 +117,103 @@ function parseSkillGapResponse(value: unknown) {
   });
 }
 
+function isHttpResourceUrl(value: unknown): value is string {
+  if (typeof value !== "string" || !value.trim()) return false;
+
+  try {
+    const parsedUrl = new URL(value);
+    const hostname = parsedUrl.hostname.toLowerCase().replace(/^\[|\]$/g, "");
+    const privateHost =
+      hostname === "localhost" ||
+      hostname.endsWith(".localhost") ||
+      hostname.endsWith(".local") ||
+      hostname === "127.0.0.1" ||
+      hostname === "::1" ||
+      hostname.startsWith("10.") ||
+      hostname.startsWith("192.168.") ||
+      /^172\.(1[6-9]|2\d|3[01])\./.test(hostname);
+
+    return (
+      (parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:") &&
+      !parsedUrl.username &&
+      !parsedUrl.password &&
+      !privateHost
+    );
+  } catch {
+    return false;
+  }
+}
+
 function parseLearningRoadmapResponse(value: unknown) {
   const response = value && typeof value === "object"
     ? value as Record<string, unknown>
     : {};
+  const resources = Array.isArray(response.resources)
+    ? response.resources.filter((resource) => {
+        if (!resource || typeof resource !== "object") return false;
+        const url = (resource as Record<string, unknown>).url;
+        return isHttpResourceUrl(url);
+      })
+    : [];
 
   return GenerateLearningRoadmapResponse.parse({
     ...response,
-    resources: response.resources ?? [],
+    resources,
     exercises: response.exercises ?? [],
     projects: response.projects ?? [],
   });
+}
+
+async function verifyResourceUrl(url: string) {
+  if (!isHttpResourceUrl(url)) {
+    return false;
+  }
+  const parsedUrl = new URL(url);
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), RESOURCE_URL_TIMEOUT_MS);
+  const requestOptions = {
+    redirect: "follow" as const,
+    signal: controller.signal,
+    headers: { "User-Agent": "EduPath-resource-verifier/1.0" },
+  };
+
+  try {
+    let response = await fetch(parsedUrl.toString(), {
+      ...requestOptions,
+      method: "HEAD",
+    });
+
+    if ([403, 405, 501].includes(response.status)) {
+      response = await fetch(parsedUrl.toString(), {
+        ...requestOptions,
+        method: "GET",
+        headers: {
+          ...requestOptions.headers,
+          Range: "bytes=0-2048",
+        },
+      });
+    }
+
+    return response.status >= 200 && response.status < 400;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function keepVerifiedResources(resources: Array<{ url: string }>) {
+  const results = await Promise.all(
+    resources.map(async (resource) => ({
+      resource,
+      verified: await verifyResourceUrl(resource.url),
+    })),
+  );
+
+  return results
+    .filter(({ verified }) => verified)
+    .map(({ resource }) => resource);
 }
 
 router.post("/skill-gap-analysis", async (req, res) => {
@@ -194,7 +281,7 @@ router.post("/learning-roadmap", async (req, res) => {
 
 Use only the identified skill gaps as the roadmap focus. Prioritize Critical and High gaps first. Fit the plan to the learner's experience, weekly learning time, and goal. Each step should be actionable and include a small project or practice outcome where useful.
 
-In addition to the ordered roadmap steps, recommend concrete resources for every identified skill gap, create a practical exercise for every Critical or High gap, and propose one or two project ideas appropriate to the learner's current experience level. Use recognizable resource titles or resource types without inventing URLs or claiming a specific provider's current catalog if you are not sure.
+In addition to the ordered roadmap steps, recommend concrete resources for every identified skill gap, create a practical exercise for every Critical or High gap, and propose one or two project ideas appropriate to the learner's current experience level. For each resource, include a canonical URL that you know is real and relevant. Never invent, guess, construct, or use a placeholder URL; if you do not know a real URL, omit that resource.
 
 Learner profile:
 ${profilePrompt(profile)}
@@ -217,6 +304,7 @@ Return ONLY valid JSON matching this exact shape:
   "resources": [{
     "title": "string",
     "skill": "string",
+    "url": "https://known-real-resource-url",
     "difficulty": "Beginner|Intermediate|Advanced",
     "estimatedTime": "string",
     "expectedOutcome": "string"
@@ -237,11 +325,12 @@ Return ONLY valid JSON matching this exact shape:
   }]
 }
 
-Return 3 to 5 ordered steps. Return at least one resource for every identified gap and at least one exercise for every Critical or High gap. Keep all recommendations concrete and achievable within the learner's weekly schedule.`;
+Return 3 to 5 ordered steps. Return at least one resource for every identified gap when you know a real URL, and never substitute an invented URL. Return at least one exercise for every Critical or High gap. Keep all recommendations concrete and achievable within the learner's weekly schedule.`;
 
   try {
     const result = parseLearningRoadmapResponse(await generateJson(prompt));
-    res.json(result);
+    const resources = await keepVerifiedResources(result.resources);
+    res.json({ ...result, resources });
   } catch (error) {
     res.status(502).json({
       error: error instanceof Error ? error.message : "Learning roadmap generation failed.",

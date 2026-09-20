@@ -146,6 +146,7 @@ export const GenerateLearningRoadmapResponse = zod.object({
   "resources": zod.array(zod.object({
   "title": zod.string(),
   "skill": zod.string(),
+  "url": zod.string().url(),
   "difficulty": zod.enum(['Beginner', 'Intermediate', 'Advanced']),
   "estimatedTime": zod.string(),
   "expectedOutcome": zod.string()

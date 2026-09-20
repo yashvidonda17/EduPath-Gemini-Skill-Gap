@@ -211,6 +211,7 @@ export const RoadmapLearningResourceDifficulty = {
 export interface RoadmapLearningResource {
   title: string;
   skill: string;
+  url: string;
   difficulty: RoadmapLearningResourceDifficulty;
   estimatedTime: string;
   expectedOutcome: string;

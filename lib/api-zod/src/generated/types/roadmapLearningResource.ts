@@ -10,6 +10,7 @@ import type { RoadmapLearningResourceDifficulty } from './roadmapLearningResourc
 export interface RoadmapLearningResource {
   title: string;
   skill: string;
+  url: string;
   difficulty: RoadmapLearningResourceDifficulty;
   estimatedTime: string;
   expectedOutcome: string;

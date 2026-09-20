@@ -378,6 +378,9 @@ components:
           type: string
         skill:
           type: string
+        url:
+          type: string
+          format: uri
         difficulty:
           type: string
           enum: [Beginner, Intermediate, Advanced]
@@ -388,6 +391,7 @@ components:
       required:
         - title
         - skill
+        - url
         - difficulty
         - estimatedTime
         - expectedOutcome
