@@ -199,9 +199,63 @@ export interface RoadmapStep {
   outcome: string;
 }
 
+export type RoadmapLearningResourceDifficulty = typeof RoadmapLearningResourceDifficulty[keyof typeof RoadmapLearningResourceDifficulty];
+
+
+export const RoadmapLearningResourceDifficulty = {
+  Beginner: 'Beginner',
+  Intermediate: 'Intermediate',
+  Advanced: 'Advanced',
+} as const;
+
+export interface RoadmapLearningResource {
+  title: string;
+  skill: string;
+  difficulty: RoadmapLearningResourceDifficulty;
+  estimatedTime: string;
+  expectedOutcome: string;
+}
+
+export type RoadmapExerciseDifficulty = typeof RoadmapExerciseDifficulty[keyof typeof RoadmapExerciseDifficulty];
+
+
+export const RoadmapExerciseDifficulty = {
+  Beginner: 'Beginner',
+  Intermediate: 'Intermediate',
+  Advanced: 'Advanced',
+} as const;
+
+export interface RoadmapExercise {
+  title: string;
+  skill: string;
+  difficulty: RoadmapExerciseDifficulty;
+  estimatedTime: string;
+  expectedOutcome: string;
+}
+
+export type RoadmapProjectIdeaDifficulty = typeof RoadmapProjectIdeaDifficulty[keyof typeof RoadmapProjectIdeaDifficulty];
+
+
+export const RoadmapProjectIdeaDifficulty = {
+  Beginner: 'Beginner',
+  Intermediate: 'Intermediate',
+  Advanced: 'Advanced',
+} as const;
+
+export interface RoadmapProjectIdea {
+  title: string;
+  skill: string;
+  difficulty: RoadmapProjectIdeaDifficulty;
+  estimatedTime: string;
+  expectedOutcome: string;
+}
+
 export interface LearningRoadmap {
   targetCareer: string;
   summary: string;
   steps: RoadmapStep[];
+  resources: RoadmapLearningResource[];
+  exercises: RoadmapExercise[];
+  projects: RoadmapProjectIdea[];
 }
 

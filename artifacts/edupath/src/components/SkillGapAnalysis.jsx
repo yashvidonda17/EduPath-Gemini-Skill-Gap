@@ -529,6 +529,45 @@ export default function SkillGapAnalysis({ userProfile, onEditProfile, onGenerat
                 </div>
               ))}
             </div>
+            <div style={{ display: 'grid', gap: '1.5rem', marginTop: '1.75rem' }}>
+              {[
+                { key: 'resources', title: 'Recommended Learning Resources', icon: <BookOpen size={18} color="#67e8f9" />, items: roadmap.resources || [] },
+                { key: 'exercises', title: 'Practical Exercises', icon: <Zap size={18} color="#fbbf24" />, items: roadmap.exercises || [] },
+                { key: 'projects', title: 'Projects to Build', icon: <Award size={18} color="#c4b5fd" />, items: roadmap.projects || [] }
+              ].map((section) => (
+                section.items.length > 0 && (
+                  <div key={section.key}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                      {section.icon}
+                      <h4 style={{ fontSize: '1rem', color: '#fff' }}>{section.title}</h4>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.75rem' }}>
+                      {section.items.map((item, itemIndex) => (
+                        <div key={`${item.skill}-${item.title}-${itemIndex}`} style={{
+                          padding: '1rem',
+                          background: 'rgba(255,255,255,0.03)',
+                          border: '1px solid var(--border-light)',
+                          borderRadius: 'var(--radius-md)'
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem' }}>
+                            <strong style={{ color: '#fff', fontSize: '0.9rem', lineHeight: 1.35 }}>{item.title}</strong>
+                            <span className="badge" style={{ fontSize: '0.68rem', whiteSpace: 'nowrap' }}>{item.difficulty}</span>
+                          </div>
+                          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', margin: '0.65rem 0 0.5rem', color: '#a5b4fc', fontSize: '0.75rem' }}>
+                            <span>Skill: {item.skill}</span>
+                            <span>•</span>
+                            <span>Time: {item.estimatedTime}</span>
+                          </div>
+                          <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', lineHeight: 1.5 }}>
+                            {item.expectedOutcome}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              ))}
+            </div>
           </div>
         ) : (
           <button 

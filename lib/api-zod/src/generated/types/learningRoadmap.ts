@@ -5,10 +5,16 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { RoadmapExercise } from './roadmapExercise';
+import type { RoadmapLearningResource } from './roadmapLearningResource';
+import type { RoadmapProjectIdea } from './roadmapProjectIdea';
 import type { RoadmapStep } from './roadmapStep';
 
 export interface LearningRoadmap {
   targetCareer: string;
   summary: string;
   steps: RoadmapStep[];
+  resources: RoadmapLearningResource[];
+  exercises: RoadmapExercise[];
+  projects: RoadmapProjectIdea[];
 }

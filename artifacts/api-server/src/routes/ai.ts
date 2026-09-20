@@ -116,6 +116,19 @@ function parseSkillGapResponse(value: unknown) {
   });
 }
 
+function parseLearningRoadmapResponse(value: unknown) {
+  const response = value && typeof value === "object"
+    ? value as Record<string, unknown>
+    : {};
+
+  return GenerateLearningRoadmapResponse.parse({
+    ...response,
+    resources: response.resources ?? [],
+    exercises: response.exercises ?? [],
+    projects: response.projects ?? [],
+  });
+}
+
 router.post("/skill-gap-analysis", async (req, res) => {
   const parsedBody = AnalyzeSkillGapBody.safeParse(req.body);
   if (!parsedBody.success) {
@@ -181,6 +194,8 @@ router.post("/learning-roadmap", async (req, res) => {
 
 Use only the identified skill gaps as the roadmap focus. Prioritize Critical and High gaps first. Fit the plan to the learner's experience, weekly learning time, and goal. Each step should be actionable and include a small project or practice outcome where useful.
 
+In addition to the ordered roadmap steps, recommend concrete resources for every identified skill gap, create a practical exercise for every Critical or High gap, and propose one or two project ideas appropriate to the learner's current experience level. Use recognizable resource titles or resource types without inventing URLs or claiming a specific provider's current catalog if you are not sure.
+
 Learner profile:
 ${profilePrompt(profile)}
 
@@ -198,13 +213,34 @@ Return ONLY valid JSON matching this exact shape:
     "duration": "string",
     "actions": ["string"],
     "outcome": "string"
+  }],
+  "resources": [{
+    "title": "string",
+    "skill": "string",
+    "difficulty": "Beginner|Intermediate|Advanced",
+    "estimatedTime": "string",
+    "expectedOutcome": "string"
+  }],
+  "exercises": [{
+    "title": "string",
+    "skill": "string",
+    "difficulty": "Beginner|Intermediate|Advanced",
+    "estimatedTime": "string",
+    "expectedOutcome": "string"
+  }],
+  "projects": [{
+    "title": "string",
+    "skill": "string",
+    "difficulty": "Beginner|Intermediate|Advanced",
+    "estimatedTime": "string",
+    "expectedOutcome": "string"
   }]
 }
 
-Return 3 to 5 ordered steps. Keep the roadmap concrete and achievable within the learner's weekly schedule.`;
+Return 3 to 5 ordered steps. Return at least one resource for every identified gap and at least one exercise for every Critical or High gap. Keep all recommendations concrete and achievable within the learner's weekly schedule.`;
 
   try {
-    const result = GenerateLearningRoadmapResponse.parse(await generateJson(prompt));
+    const result = parseLearningRoadmapResponse(await generateJson(prompt));
     res.json(result);
   } catch (error) {
     res.status(502).json({

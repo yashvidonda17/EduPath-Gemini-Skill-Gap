@@ -142,6 +142,27 @@ export const GenerateLearningRoadmapResponse = zod.object({
   "duration": zod.string(),
   "actions": zod.array(zod.string()),
   "outcome": zod.string()
+})),
+  "resources": zod.array(zod.object({
+  "title": zod.string(),
+  "skill": zod.string(),
+  "difficulty": zod.enum(['Beginner', 'Intermediate', 'Advanced']),
+  "estimatedTime": zod.string(),
+  "expectedOutcome": zod.string()
+})),
+  "exercises": zod.array(zod.object({
+  "title": zod.string(),
+  "skill": zod.string(),
+  "difficulty": zod.enum(['Beginner', 'Intermediate', 'Advanced']),
+  "estimatedTime": zod.string(),
+  "expectedOutcome": zod.string()
+})),
+  "projects": zod.array(zod.object({
+  "title": zod.string(),
+  "skill": zod.string(),
+  "difficulty": zod.enum(['Beginner', 'Intermediate', 'Advanced']),
+  "estimatedTime": zod.string(),
+  "expectedOutcome": zod.string()
 }))
 })
 

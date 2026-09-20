@@ -371,6 +371,66 @@ components:
         - duration
         - actions
         - outcome
+    RoadmapLearningResource:
+      type: object
+      properties:
+        title:
+          type: string
+        skill:
+          type: string
+        difficulty:
+          type: string
+          enum: [Beginner, Intermediate, Advanced]
+        estimatedTime:
+          type: string
+        expectedOutcome:
+          type: string
+      required:
+        - title
+        - skill
+        - difficulty
+        - estimatedTime
+        - expectedOutcome
+    RoadmapExercise:
+      type: object
+      properties:
+        title:
+          type: string
+        skill:
+          type: string
+        difficulty:
+          type: string
+          enum: [Beginner, Intermediate, Advanced]
+        estimatedTime:
+          type: string
+        expectedOutcome:
+          type: string
+      required:
+        - title
+        - skill
+        - difficulty
+        - estimatedTime
+        - expectedOutcome
+    RoadmapProjectIdea:
+      type: object
+      properties:
+        title:
+          type: string
+        skill:
+          type: string
+        difficulty:
+          type: string
+          enum: [Beginner, Intermediate, Advanced]
+        estimatedTime:
+          type: string
+        expectedOutcome:
+          type: string
+      required:
+        - title
+        - skill
+        - difficulty
+        - estimatedTime
+        - expectedOutcome
     LearningRoadmap:
       type: object
       properties:
@@ -382,8 +442,23 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/RoadmapStep"
+        resources:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoadmapLearningResource"
+        exercises:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoadmapExercise"
+        projects:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoadmapProjectIdea"
       required:
         - targetCareer
         - summary
         - steps
+        - resources
+        - exercises
+        - projects
 
