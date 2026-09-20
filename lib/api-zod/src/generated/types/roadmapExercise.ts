@@ -10,6 +10,7 @@ import type { RoadmapExerciseDifficulty } from './roadmapExerciseDifficulty';
 export interface RoadmapExercise {
   title: string;
   skill: string;
+  task: string;
   difficulty: RoadmapExerciseDifficulty;
   estimatedTime: string;
   expectedOutcome: string;

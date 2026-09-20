@@ -402,6 +402,8 @@ components:
           type: string
         skill:
           type: string
+        task:
+          type: string
         difficulty:
           type: string
           enum: [Beginner, Intermediate, Advanced]
@@ -412,6 +414,7 @@ components:
       required:
         - title
         - skill
+        - task
         - difficulty
         - estimatedTime
         - expectedOutcome
@@ -422,6 +425,14 @@ components:
           type: string
         skill:
           type: string
+        skills:
+          type: array
+          items:
+            type: string
+        requirements:
+          type: array
+          items:
+            type: string
         difficulty:
           type: string
           enum: [Beginner, Intermediate, Advanced]
@@ -429,12 +440,19 @@ components:
           type: string
         expectedOutcome:
           type: string
+        deliverables:
+          type: array
+          items:
+            type: string
       required:
         - title
         - skill
+        - skills
+        - requirements
         - difficulty
         - estimatedTime
         - expectedOutcome
+        - deliverables
     LearningRoadmap:
       type: object
       properties:

@@ -31,6 +31,160 @@ function isValidResourceUrl(value) {
   }
 }
 
+const EXERCISE_SUBMISSIONS_STORAGE_KEY = 'edupath_practice_exercise_submissions';
+const PROJECT_PROGRESS_STORAGE_KEY = 'edupath_project_progress';
+
+function readStoredMap(storageKey) {
+  if (typeof window === 'undefined') return {};
+
+  try {
+    const stored = window.localStorage.getItem(storageKey);
+    const parsed = stored ? JSON.parse(stored) : {};
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveStoredMap(storageKey, value) {
+  try {
+    window.localStorage.setItem(storageKey, JSON.stringify(value));
+  } catch (error) {
+    console.warn(`Could not save EduPath progress to localStorage (${storageKey})`, error);
+  }
+}
+
+function recommendationKey(targetCareer, type, item, index) {
+  return `${targetCareer}::${type}::${index}::${item.title}::${item.skill}`;
+}
+
+function ExerciseRecommendationCard({ exercise, index, targetCareer, answers, submissions, onAnswerChange, onSubmit }) {
+  const key = recommendationKey(targetCareer, 'exercise', exercise, index);
+  const submission = submissions[key];
+  const answer = answers[key] ?? submission?.answer ?? '';
+
+  return (
+    <div style={{
+      padding: '1rem',
+      background: 'rgba(255,255,255,0.03)',
+      border: '1px solid var(--border-light)',
+      borderRadius: 'var(--radius-md)'
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem' }}>
+        <strong style={{ color: '#fff', fontSize: '0.9rem', lineHeight: 1.35 }}>{exercise.title}</strong>
+        <span className="badge" style={{ fontSize: '0.68rem', whiteSpace: 'nowrap' }}>{exercise.difficulty}</span>
+      </div>
+      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', margin: '0.65rem 0 0.75rem', color: '#a5b4fc', fontSize: '0.75rem' }}>
+        <span>Skill: {exercise.skill}</span>
+        <span>•</span>
+        <span>Time: {exercise.estimatedTime}</span>
+      </div>
+      <div style={{ padding: '0.8rem', background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.2)', borderRadius: 'var(--radius-md)', marginBottom: '0.8rem' }}>
+        <strong style={{ display: 'block', color: '#fcd34d', fontSize: '0.78rem', marginBottom: '0.3rem' }}>Task / Problem</strong>
+        <p style={{ color: '#e2e8f0', fontSize: '0.84rem', lineHeight: 1.5 }}>{exercise.task}</p>
+      </div>
+      <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', lineHeight: 1.5, marginBottom: '0.75rem' }}>
+        <strong style={{ color: '#cbd5e1' }}>Expected outcome:</strong> {exercise.expectedOutcome}
+      </p>
+      <label style={{ display: 'block', color: '#cbd5e1', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.4rem' }} htmlFor={`exercise-answer-${key}`}>
+        Your answer
+      </label>
+      <textarea
+        id={`exercise-answer-${key}`}
+        value={answer}
+        onChange={(event) => onAnswerChange(key, event.target.value)}
+        placeholder="Describe your solution, reasoning, or code approach..."
+        rows={4}
+        style={{ width: '100%', resize: 'vertical', marginBottom: '0.65rem' }}
+      />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
+        <button
+          type="button"
+          onClick={() => onSubmit(exercise, index)}
+          disabled={!answer.trim()}
+          className="btn btn-primary"
+          style={{ padding: '0.55rem 0.9rem', fontSize: '0.8rem', opacity: answer.trim() ? 1 : 0.55 }}
+        >
+          <CheckCircle2 size={15} /> {submission ? 'Update Submission' : 'Submit Answer'}
+        </button>
+        {submission && (
+          <span style={{ color: '#34d399', fontSize: '0.75rem' }}>
+            Saved for future AI evaluation
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ProjectRecommendationCard({ project, index, targetCareer, progress, onStatusChange }) {
+  const key = recommendationKey(targetCareer, 'project', project, index);
+  const currentStatus = progress[key]?.status || 'Not started';
+  const skills = project.skills?.length ? project.skills : [project.skill];
+
+  return (
+    <div style={{
+      padding: '1rem',
+      background: 'rgba(255,255,255,0.03)',
+      border: '1px solid var(--border-light)',
+      borderRadius: 'var(--radius-md)'
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem' }}>
+        <strong style={{ color: '#fff', fontSize: '0.9rem', lineHeight: 1.35 }}>{project.title}</strong>
+        <span className="badge" style={{ fontSize: '0.68rem', whiteSpace: 'nowrap' }}>{project.difficulty}</span>
+      </div>
+      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', margin: '0.65rem 0 0.75rem', color: '#a5b4fc', fontSize: '0.75rem' }}>
+        <span>Time: {project.estimatedTime}</span>
+        <span>•</span>
+        <span style={{ color: currentStatus === 'Completed' ? '#34d399' : '#c4b5fd' }}>{currentStatus}</span>
+      </div>
+      <p style={{ color: 'var(--text-muted)', fontSize: '0.84rem', lineHeight: 1.5, marginBottom: '0.8rem' }}>
+        <strong style={{ color: '#cbd5e1' }}>Build brief:</strong> {project.expectedOutcome}
+      </p>
+      <div style={{ display: 'grid', gap: '0.75rem', marginBottom: '0.9rem' }}>
+        <div>
+          <strong style={{ display: 'block', color: '#c4b5fd', fontSize: '0.78rem', marginBottom: '0.35rem' }}>Skills</strong>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+            {skills.map((skill, skillIndex) => <span key={`${skill}-${skillIndex}`} className="badge" style={{ fontSize: '0.7rem' }}>{skill}</span>)}
+          </div>
+        </div>
+        <div>
+          <strong style={{ display: 'block', color: '#c4b5fd', fontSize: '0.78rem', marginBottom: '0.35rem' }}>Requirements</strong>
+          <ul style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: 1.5, paddingLeft: '1.1rem', margin: 0 }}>
+            {(project.requirements || []).map((requirement, requirementIndex) => <li key={requirementIndex}>{requirement}</li>)}
+          </ul>
+        </div>
+        <div>
+          <strong style={{ display: 'block', color: '#c4b5fd', fontSize: '0.78rem', marginBottom: '0.35rem' }}>Deliverables</strong>
+          <ul style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: 1.5, paddingLeft: '1.1rem', margin: 0 }}>
+            {(project.deliverables || []).map((deliverable, deliverableIndex) => <li key={deliverableIndex}>{deliverable}</li>)}
+          </ul>
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+        {['Started', 'Completed'].map((status) => (
+          <button
+            key={status}
+            type="button"
+            onClick={() => onStatusChange(project, index, status)}
+            className="btn btn-secondary"
+            aria-pressed={currentStatus === status}
+            style={{
+              padding: '0.5rem 0.75rem',
+              fontSize: '0.78rem',
+              color: currentStatus === status ? '#fff' : 'var(--text-muted)',
+              borderColor: currentStatus === status ? (status === 'Completed' ? 'rgba(16, 185, 129, 0.6)' : 'rgba(167, 139, 250, 0.6)') : undefined,
+              background: currentStatus === status ? (status === 'Completed' ? 'rgba(16, 185, 129, 0.16)' : 'rgba(167, 139, 250, 0.14)') : undefined
+            }}
+          >
+            {status}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function SkillGapAnalysis({ userProfile, onEditProfile, onGenerateRoadmap }) {
   const [analysis, setAnalysis] = useState(null);
   const [analysisLoading, setAnalysisLoading] = useState(true);
@@ -38,6 +192,9 @@ export default function SkillGapAnalysis({ userProfile, onEditProfile, onGenerat
   const [roadmap, setRoadmap] = useState(null);
   const [roadmapLoading, setRoadmapLoading] = useState(false);
   const [roadmapError, setRoadmapError] = useState('');
+  const [exerciseAnswers, setExerciseAnswers] = useState({});
+  const [exerciseSubmissions, setExerciseSubmissions] = useState(() => readStoredMap(EXERCISE_SUBMISSIONS_STORAGE_KEY));
+  const [projectProgress, setProjectProgress] = useState(() => readStoredMap(PROJECT_PROGRESS_STORAGE_KEY));
 
   useEffect(() => {
     let isCurrent = true;

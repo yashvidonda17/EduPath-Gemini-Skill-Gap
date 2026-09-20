@@ -229,6 +229,7 @@ export const RoadmapExerciseDifficulty = {
 export interface RoadmapExercise {
   title: string;
   skill: string;
+  task: string;
   difficulty: RoadmapExerciseDifficulty;
   estimatedTime: string;
   expectedOutcome: string;
@@ -246,9 +247,12 @@ export const RoadmapProjectIdeaDifficulty = {
 export interface RoadmapProjectIdea {
   title: string;
   skill: string;
+  skills: string[];
+  requirements: string[];
   difficulty: RoadmapProjectIdeaDifficulty;
   estimatedTime: string;
   expectedOutcome: string;
+  deliverables: string[];
 }
 
 export interface LearningRoadmap {

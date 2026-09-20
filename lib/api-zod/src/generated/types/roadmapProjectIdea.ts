@@ -10,7 +10,10 @@ import type { RoadmapProjectIdeaDifficulty } from './roadmapProjectIdeaDifficult
 export interface RoadmapProjectIdea {
   title: string;
   skill: string;
+  skills: string[];
+  requirements: string[];
   difficulty: RoadmapProjectIdeaDifficulty;
   estimatedTime: string;
   expectedOutcome: string;
+  deliverables: string[];
 }

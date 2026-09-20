@@ -312,6 +312,7 @@ Return ONLY valid JSON matching this exact shape:
   "exercises": [{
     "title": "string",
     "skill": "string",
+    "task": "A clear task or problem for the learner to solve",
     "difficulty": "Beginner|Intermediate|Advanced",
     "estimatedTime": "string",
     "expectedOutcome": "string"
@@ -319,13 +320,16 @@ Return ONLY valid JSON matching this exact shape:
   "projects": [{
     "title": "string",
     "skill": "string",
+    "skills": ["string"],
+    "requirements": ["string"],
     "difficulty": "Beginner|Intermediate|Advanced",
     "estimatedTime": "string",
-    "expectedOutcome": "string"
+    "expectedOutcome": "string",
+    "deliverables": ["string"]
   }]
 }
 
-Return 3 to 5 ordered steps. Return at least one resource for every identified gap when you know a real URL, and never substitute an invented URL. Return at least one exercise for every Critical or High gap. Keep all recommendations concrete and achievable within the learner's weekly schedule.`;
+Return 3 to 5 ordered steps. Return at least one resource for every identified gap when you know a real URL, and never substitute an invented URL. Return at least one exercise for every Critical or High gap. Every exercise task must be a concrete problem the learner can solve, not a vague topic. Every project must list the skills it practices, concrete prerequisites, and tangible deliverables. Keep all recommendations concrete and achievable within the learner's weekly schedule.`;
 
   try {
     const result = parseLearningRoadmapResponse(await generateJson(prompt));

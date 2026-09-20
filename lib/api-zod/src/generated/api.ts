@@ -154,6 +154,7 @@ export const GenerateLearningRoadmapResponse = zod.object({
   "exercises": zod.array(zod.object({
   "title": zod.string(),
   "skill": zod.string(),
+  "task": zod.string(),
   "difficulty": zod.enum(['Beginner', 'Intermediate', 'Advanced']),
   "estimatedTime": zod.string(),
   "expectedOutcome": zod.string()
@@ -161,9 +162,12 @@ export const GenerateLearningRoadmapResponse = zod.object({
   "projects": zod.array(zod.object({
   "title": zod.string(),
   "skill": zod.string(),
+  "skills": zod.array(zod.string()),
+  "requirements": zod.array(zod.string()),
   "difficulty": zod.enum(['Beginner', 'Intermediate', 'Advanced']),
   "estimatedTime": zod.string(),
-  "expectedOutcome": zod.string()
+  "expectedOutcome": zod.string(),
+  "deliverables": zod.array(zod.string())
 }))
 })
 
