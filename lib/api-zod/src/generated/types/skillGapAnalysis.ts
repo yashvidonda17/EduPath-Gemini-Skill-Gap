@@ -6,7 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { AcquiredSkill } from './acquiredSkill';
+import type { Capability } from './capability';
+import type { LearningObjective } from './learningObjective';
 import type { MissingSkill } from './missingSkill';
+import type { ResumeProfile } from './resumeProfile';
 import type { SkillRequirement } from './skillRequirement';
 
 export interface SkillGapAnalysis {
@@ -20,4 +23,7 @@ export interface SkillGapAnalysis {
      */
   matchPercentage: number;
   explanation: string;
+  resumeProfile: ResumeProfile;
+  capabilities: Capability[];
+  learningObjectives: LearningObjective[];
 }

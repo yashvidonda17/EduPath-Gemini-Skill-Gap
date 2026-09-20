@@ -106,8 +106,29 @@ components:
         - weeklyHours
         - learningGoal
     SkillGapAnalysisInput:
+      type: object
       allOf:
         - $ref: "#/components/schemas/LearnerProfile"
+      properties:
+        resume:
+          $ref: "#/components/schemas/ResumeAttachment"
+    ResumeAttachment:
+      type: object
+      properties:
+        fileName:
+          type: string
+          minLength: 1
+        mimeType:
+          type: string
+          enum: [application/pdf, text/plain]
+        data:
+          type: string
+          minLength: 1
+          maxLength: 12000000
+      required:
+        - fileName
+        - mimeType
+        - data
     SkillRequirement:
       type: object
       properties:
@@ -170,6 +191,16 @@ components:
           maximum: 100
         explanation:
           type: string
+        resumeProfile:
+          $ref: "#/components/schemas/ResumeProfile"
+        capabilities:
+          type: array
+          items:
+            $ref: "#/components/schemas/Capability"
+        learningObjectives:
+          type: array
+          items:
+            $ref: "#/components/schemas/LearningObjective"
       required:
         - targetCareer
         - roleRequirements
@@ -177,6 +208,131 @@ components:
         - missingSkills
         - matchPercentage
         - explanation
+        - resumeProfile
+        - capabilities
+        - learningObjectives
+    ResumeProfile:
+      type: object
+      properties:
+        skills:
+          type: array
+          items:
+            type: string
+        projects:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResumeProject"
+        experience:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResumeExperience"
+        certifications:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResumeCertification"
+        education:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResumeEducation"
+      required:
+        - skills
+        - projects
+        - experience
+        - certifications
+        - education
+    ResumeProject:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        technologies:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - description
+        - technologies
+    ResumeExperience:
+      type: object
+      properties:
+        role:
+          type: string
+        company:
+          type: string
+        duration:
+          type: string
+        highlights:
+          type: array
+          items:
+            type: string
+      required:
+        - role
+        - company
+        - duration
+        - highlights
+    ResumeCertification:
+      type: object
+      properties:
+        name:
+          type: string
+        issuer:
+          type: string
+        year:
+          type: string
+      required:
+        - name
+        - issuer
+        - year
+    ResumeEducation:
+      type: object
+      properties:
+        institution:
+          type: string
+        degree:
+          type: string
+        field:
+          type: string
+        year:
+          type: string
+      required:
+        - institution
+        - degree
+        - field
+        - year
+    Capability:
+      type: object
+      properties:
+        name:
+          type: string
+        evidence:
+          type: string
+        level:
+          type: string
+          enum: [Foundational, Working, Strong]
+      required:
+        - name
+        - evidence
+        - level
+    LearningObjective:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        relatedSkill:
+          type: string
+        priority:
+          type: string
+          enum: [Critical, High, Medium, Low]
+      required:
+        - title
+        - description
+        - relatedSkill
+        - priority
     LearningRoadmapInput:
       type: object
       properties:

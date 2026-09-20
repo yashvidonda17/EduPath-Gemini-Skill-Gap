@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { 
   CAREER_ROLES, 
   POPULAR_SKILLS, 
@@ -16,7 +16,10 @@ import {
   Compass, 
   CheckCircle2, 
   AlertCircle,
-  ArrowLeft
+  ArrowLeft,
+  Upload,
+  FileText,
+  Trash2
 } from 'lucide-react';
 
 export default function OnboardingForm({ onSubmit, onCancel, initialData }) {
@@ -26,7 +29,49 @@ export default function OnboardingForm({ onSubmit, onCancel, initialData }) {
   const [experience, setExperience] = useState(initialData?.experience || 'Intermediate');
   const [weeklyHours, setWeeklyHours] = useState(initialData?.weeklyHours || '10 hours');
   const [learningGoal, setLearningGoal] = useState(initialData?.learningGoal || 'Job');
+  const [resume, setResume] = useState(initialData?.resume || null);
+  const [resumeReading, setResumeReading] = useState(false);
   const [error, setError] = useState('');
+  const resumeInputRef = useRef(null);
+
+  const handleResumeChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const lowerName = file.name.toLowerCase();
+    const mimeType = file.type || (lowerName.endsWith('.pdf') ? 'application/pdf' : 'text/plain');
+    const supportedType = mimeType === 'application/pdf' || mimeType === 'text/plain';
+    if (!supportedType || (!lowerName.endsWith('.pdf') && !lowerName.endsWith('.txt'))) {
+      setError('Please upload a PDF or plain-text resume.');
+      event.target.value = '';
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      setError('Resume files must be 8 MB or smaller.');
+      event.target.value = '';
+      return;
+    }
+
+    setResumeReading(true);
+    setError('');
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = String(reader.result || '');
+      const data = dataUrl.includes(',') ? dataUrl.slice(dataUrl.indexOf(',') + 1) : dataUrl;
+      setResume({ fileName: file.name, mimeType, data, size: file.size });
+      setResumeReading(false);
+    };
+    reader.onerror = () => {
+      setError('The resume could not be read. Please try another file.');
+      setResumeReading(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveResume = () => {
+    setResume(null);
+    if (resumeInputRef.current) resumeInputRef.current.value = '';
+  };
 
   // Handle adding skill tags
   const handleAddSkill = (skillToAdd) => {
@@ -62,6 +107,10 @@ export default function OnboardingForm({ onSubmit, onCancel, initialData }) {
       setError('Please add at least one current skill tag.');
       return;
     }
+    if (resumeReading) {
+      setError('Please wait for the resume to finish loading.');
+      return;
+    }
     setError('');
     
     const formData = {
@@ -69,7 +118,14 @@ export default function OnboardingForm({ onSubmit, onCancel, initialData }) {
       skills,
       experience,
       weeklyHours,
-      learningGoal
+      learningGoal,
+      ...(resume ? {
+        resume: {
+          fileName: resume.fileName,
+          mimeType: resume.mimeType,
+          data: resume.data
+        }
+      } : {})
     };
 
     onSubmit(formData);
@@ -88,13 +144,13 @@ export default function OnboardingForm({ onSubmit, onCancel, initialData }) {
       <div className="glass-panel" style={{ padding: '2.5rem' }}>
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <div className="badge" style={{ marginBottom: '0.75rem' }}>
-            <Sparkles size={14} /> Step 1 of 2: Skill Profile
+             <Sparkles size={14} /> Step 1 of 2: Skill Profile & Resume
           </div>
           <h2 style={{ fontSize: '2.2rem', fontWeight: 800 }}>
             Configure Your <span className="text-gradient">EduPath Profile</span>
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '1rem', marginTop: '0.5rem' }}>
-            Provide your career ambition and current skill set so our AI engine can pinpoint your precise skill gaps.
+             Provide your career ambition, current skill set, and optionally your resume so our AI engine can pinpoint your precise skill gaps.
           </p>
         </div>
 
@@ -271,10 +327,61 @@ export default function OnboardingForm({ onSubmit, onCancel, initialData }) {
             </div>
           </div>
 
+          {/* Field 3: Resume */}
+          <div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, fontSize: '1.05rem', marginBottom: '0.5rem' }}>
+              <FileText size={18} color="#a78bfa" /> 3. Resume (Optional)
+            </label>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.8rem' }}>
+              Upload a PDF or plain-text resume to extract skills, projects, experience, certifications, and education.
+            </p>
+            <input
+              ref={resumeInputRef}
+              type="file"
+              accept=".pdf,.txt,application/pdf,text/plain"
+              onChange={handleResumeChange}
+              style={{ display: 'none' }}
+            />
+            {resume ? (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '1rem',
+                padding: '1rem 1.1rem',
+                background: 'rgba(167, 139, 250, 0.1)',
+                border: '1px solid rgba(167, 139, 250, 0.35)',
+                borderRadius: 'var(--radius-md)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem', minWidth: 0 }}>
+                  <FileText size={20} color="#c4b5fd" />
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ color: '#fff', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{resume.fileName}</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
+                      {resumeReading ? 'Reading resume…' : `${Math.max(1, Math.round((resume.size || 0) / 1024))} KB ready for AI extraction`}
+                    </div>
+                  </div>
+                </div>
+                <button type="button" onClick={handleRemoveResume} className="btn btn-secondary" style={{ padding: '0.45rem 0.7rem', borderRadius: 'var(--radius-md)' }} aria-label="Remove resume">
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => resumeInputRef.current?.click()}
+                className="btn btn-secondary"
+                style={{ width: '100%', borderStyle: 'dashed', borderRadius: 'var(--radius-md)', padding: '1rem' }}
+              >
+                <Upload size={18} /> Choose Resume PDF or TXT
+              </button>
+            )}
+          </div>
+
           {/* Field 3: Current Experience Level */}
           <div>
             <label style={{ display: 'block', fontWeight: 600, fontSize: '1.05rem', marginBottom: '0.8rem' }}>
-              3. Current Experience Level
+              4. Current Experience Level
             </label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
               {EXPERIENCE_LEVELS.map((item) => (
@@ -303,7 +410,7 @@ export default function OnboardingForm({ onSubmit, onCancel, initialData }) {
           {/* Field 4: Weekly Learning Time */}
           <div>
             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, fontSize: '1.05rem', marginBottom: '0.8rem' }}>
-              <Clock size={18} color="#10b981" /> 4. Weekly Learning Time
+              <Clock size={18} color="#10b981" /> 5. Weekly Learning Time
             </label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
               {LEARNING_HOURS.map((item) => (
@@ -332,7 +439,7 @@ export default function OnboardingForm({ onSubmit, onCancel, initialData }) {
           {/* Field 5: Learning Goal */}
           <div>
             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, fontSize: '1.05rem', marginBottom: '0.8rem' }}>
-              <Compass size={18} color="#f59e0b" /> 5. Learning Goal
+              <Compass size={18} color="#f59e0b" /> 6. Learning Goal
             </label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
               {LEARNING_GOALS.map((item) => (

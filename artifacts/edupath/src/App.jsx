@@ -42,7 +42,8 @@ export default function App() {
   const handleFormSubmit = (formData) => {
     setUserProfile(formData);
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+      const { resume, ...profileForStorage } = formData;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(profileForStorage));
     } catch (err) {
       console.warn('Could not save profile to localStorage', err);
     }

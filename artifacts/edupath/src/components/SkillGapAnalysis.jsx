@@ -62,7 +62,7 @@ export default function SkillGapAnalysis({ userProfile, onEditProfile, onGenerat
     setRoadmapError('');
     try {
       const result = await generateLearningRoadmap({
-        profile: userProfile,
+        profile: profileForRoadmap,
         skillGaps: analysis.missingSkills,
       });
       setRoadmap(result);
@@ -98,6 +98,17 @@ export default function SkillGapAnalysis({ userProfile, onEditProfile, onGenerat
       </div>
     );
   }
+
+  const resumeProfile = analysis.resumeProfile || {
+    skills: [],
+    projects: [],
+    experience: [],
+    certifications: [],
+    education: []
+  };
+  const capabilities = analysis.capabilities || [];
+  const learningObjectives = analysis.learningObjectives || [];
+  const { resume, ...profileForRoadmap } = userProfile;
 
   return (
     <div className="container" style={{ paddingTop: '7rem', paddingBottom: '5rem', maxWidth: '1040px' }}>
@@ -242,6 +253,112 @@ export default function SkillGapAnalysis({ userProfile, onEditProfile, onGenerat
               <strong>{analysis.acquiredSkills.length}</strong> of <strong>{analysis.roleRequirements.length}</strong> required competencies met
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Resume extraction and structured learning results */}
+      <div className="glass-panel" style={{ padding: '1.75rem', marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
+          <div style={{ padding: '0.4rem', background: 'rgba(167, 139, 250, 0.15)', borderRadius: '8px', color: '#c4b5fd' }}>
+            <BrainCircuit size={20} />
+          </div>
+          <div>
+            <h3 style={{ fontSize: '1.15rem' }}>Resume Intelligence</h3>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Information extracted and evaluated for your target role</p>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.25rem' }}>
+          <div>
+            <h4 style={{ fontSize: '0.9rem', marginBottom: '0.6rem', color: '#c4b5fd' }}>Resume Skills</h4>
+            {resumeProfile.skills.length > 0 ? (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                {resumeProfile.skills.map((skill, index) => <span key={`${skill}-${index}`} className="badge" style={{ fontSize: '0.75rem' }}>{skill}</span>)}
+              </div>
+            ) : <p style={{ color: 'var(--text-dim)', fontSize: '0.85rem' }}>No resume skills extracted.</p>}
+          </div>
+
+          <div>
+            <h4 style={{ fontSize: '0.9rem', marginBottom: '0.6rem', color: '#c4b5fd' }}>Capabilities</h4>
+            {capabilities.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
+                {capabilities.map((capability, index) => (
+                  <div key={`${capability.name}-${index}`} style={{ padding: '0.65rem 0.8rem', background: 'rgba(99, 102, 241, 0.08)', border: '1px solid rgba(99, 102, 241, 0.2)', borderRadius: 'var(--radius-md)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5rem', alignItems: 'center' }}>
+                      <strong style={{ fontSize: '0.86rem' }}>{capability.name}</strong>
+                      <span style={{ fontSize: '0.7rem', color: '#a5b4fc' }}>{capability.level}</span>
+                    </div>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginTop: '0.2rem' }}>{capability.evidence}</p>
+                  </div>
+                ))}
+              </div>
+            ) : <p style={{ color: 'var(--text-dim)', fontSize: '0.85rem' }}>No capabilities extracted.</p>}
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.25rem', marginTop: '1.5rem' }}>
+          <div>
+            <h4 style={{ fontSize: '0.9rem', marginBottom: '0.6rem', color: '#c4b5fd' }}>Projects & Experience</h4>
+            {resumeProfile.projects.length === 0 && resumeProfile.experience.length === 0 ? (
+              <p style={{ color: 'var(--text-dim)', fontSize: '0.85rem' }}>No projects or experience extracted.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                {resumeProfile.projects.map((project, index) => (
+                  <div key={`project-${index}`} style={{ padding: '0.7rem 0.8rem', background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius-md)' }}>
+                    <strong style={{ fontSize: '0.86rem' }}>{project.name}</strong>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginTop: '0.2rem' }}>{project.description}</p>
+                    {project.technologies.length > 0 && <p style={{ color: '#a5b4fc', fontSize: '0.72rem', marginTop: '0.25rem' }}>{project.technologies.join(' • ')}</p>}
+                  </div>
+                ))}
+                {resumeProfile.experience.map((experience, index) => (
+                  <div key={`experience-${index}`} style={{ padding: '0.7rem 0.8rem', background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius-md)' }}>
+                    <strong style={{ fontSize: '0.86rem' }}>{experience.role} · {experience.company}</strong>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginTop: '0.2rem' }}>{experience.duration}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <h4 style={{ fontSize: '0.9rem', marginBottom: '0.6rem', color: '#c4b5fd' }}>Certifications & Education</h4>
+            {resumeProfile.certifications.length === 0 && resumeProfile.education.length === 0 ? (
+              <p style={{ color: 'var(--text-dim)', fontSize: '0.85rem' }}>No certifications or education extracted.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                {resumeProfile.certifications.map((certification, index) => (
+                  <div key={`certification-${index}`} style={{ padding: '0.7rem 0.8rem', background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius-md)' }}>
+                    <strong style={{ fontSize: '0.86rem' }}>{certification.name}</strong>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginTop: '0.2rem' }}>{certification.issuer} · {certification.year}</p>
+                  </div>
+                ))}
+                {resumeProfile.education.map((education, index) => (
+                  <div key={`education-${index}`} style={{ padding: '0.7rem 0.8rem', background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius-md)' }}>
+                    <strong style={{ fontSize: '0.86rem' }}>{education.degree} {education.field && `· ${education.field}`}</strong>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginTop: '0.2rem' }}>{education.institution} · {education.year}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px dashed var(--border-light)' }}>
+          <h4 style={{ fontSize: '0.9rem', marginBottom: '0.7rem', color: '#c4b5fd' }}>Learning Objectives</h4>
+          {learningObjectives.length > 0 ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '0.65rem' }}>
+              {learningObjectives.map((objective, index) => (
+                <div key={`${objective.title}-${index}`} style={{ padding: '0.75rem 0.85rem', background: 'rgba(6, 182, 212, 0.06)', border: '1px solid rgba(6, 182, 212, 0.2)', borderRadius: 'var(--radius-md)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5rem' }}>
+                    <strong style={{ fontSize: '0.84rem' }}>{objective.title}</strong>
+                    <span style={{ color: '#67e8f9', fontSize: '0.7rem' }}>{objective.priority}</span>
+                  </div>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginTop: '0.25rem' }}>{objective.description}</p>
+                  <p style={{ color: '#67e8f9', fontSize: '0.72rem', marginTop: '0.3rem' }}>Focus: {objective.relatedSkill}</p>
+                </div>
+              ))}
+            </div>
+          ) : <p style={{ color: 'var(--text-dim)', fontSize: '0.85rem' }}>No learning objectives generated.</p>}
         </div>
       </div>
 

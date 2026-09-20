@@ -22,7 +22,28 @@ export interface LearnerProfile {
   learningGoal: string;
 }
 
-export type SkillGapAnalysisInput = LearnerProfile;
+export type ResumeAttachmentMimeType = typeof ResumeAttachmentMimeType[keyof typeof ResumeAttachmentMimeType];
+
+
+export const ResumeAttachmentMimeType = {
+  'application/pdf': 'application/pdf',
+  'text/plain': 'text/plain',
+} as const;
+
+export interface ResumeAttachment {
+  /** @minLength 1 */
+  fileName: string;
+  mimeType: ResumeAttachmentMimeType;
+  /**
+     * @minLength 1
+     * @maxLength 12000000
+     */
+  data: string;
+}
+
+export type SkillGapAnalysisInput = LearnerProfile & {
+  resume?: ResumeAttachment;
+};
 
 export type SkillRequirementImportance = typeof SkillRequirementImportance[keyof typeof SkillRequirementImportance];
 
@@ -71,6 +92,72 @@ export interface MissingSkill {
   explanation: string;
 }
 
+export interface ResumeProject {
+  name: string;
+  description: string;
+  technologies: string[];
+}
+
+export interface ResumeExperience {
+  role: string;
+  company: string;
+  duration: string;
+  highlights: string[];
+}
+
+export interface ResumeCertification {
+  name: string;
+  issuer: string;
+  year: string;
+}
+
+export interface ResumeEducation {
+  institution: string;
+  degree: string;
+  field: string;
+  year: string;
+}
+
+export interface ResumeProfile {
+  skills: string[];
+  projects: ResumeProject[];
+  experience: ResumeExperience[];
+  certifications: ResumeCertification[];
+  education: ResumeEducation[];
+}
+
+export type CapabilityLevel = typeof CapabilityLevel[keyof typeof CapabilityLevel];
+
+
+export const CapabilityLevel = {
+  Foundational: 'Foundational',
+  Working: 'Working',
+  Strong: 'Strong',
+} as const;
+
+export interface Capability {
+  name: string;
+  evidence: string;
+  level: CapabilityLevel;
+}
+
+export type LearningObjectivePriority = typeof LearningObjectivePriority[keyof typeof LearningObjectivePriority];
+
+
+export const LearningObjectivePriority = {
+  Critical: 'Critical',
+  High: 'High',
+  Medium: 'Medium',
+  Low: 'Low',
+} as const;
+
+export interface LearningObjective {
+  title: string;
+  description: string;
+  relatedSkill: string;
+  priority: LearningObjectivePriority;
+}
+
 export interface SkillGapAnalysis {
   targetCareer: string;
   roleRequirements: SkillRequirement[];
@@ -82,6 +169,9 @@ export interface SkillGapAnalysis {
      */
   matchPercentage: number;
   explanation: string;
+  resumeProfile: ResumeProfile;
+  capabilities: Capability[];
+  learningObjectives: LearningObjective[];
 }
 
 export interface LearningRoadmapInput {

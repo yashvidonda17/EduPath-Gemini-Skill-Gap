@@ -6,5 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { LearnerProfile } from './learnerProfile';
+import type { ResumeAttachment } from './resumeAttachment';
 
-export type SkillGapAnalysisInput = LearnerProfile;
+export type SkillGapAnalysisInput = LearnerProfile & {
+  resume?: ResumeAttachment;
+};

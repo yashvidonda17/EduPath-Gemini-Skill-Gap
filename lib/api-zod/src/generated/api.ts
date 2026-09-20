@@ -26,6 +26,9 @@ export const HealthCheckResponse = zod.object({
 
 
 
+export const analyzeSkillGapBodyTwoResumeDataMax = 12000000;
+
+
 
 export const AnalyzeSkillGapBody = zod.object({
   "targetCareer": zod.string().min(1),
@@ -33,7 +36,13 @@ export const AnalyzeSkillGapBody = zod.object({
   "experience": zod.string().min(1),
   "weeklyHours": zod.string().min(1),
   "learningGoal": zod.string().min(1)
-})
+}).and(zod.object({
+  "resume": zod.object({
+  "fileName": zod.string().min(1),
+  "mimeType": zod.enum(['application/pdf', 'text/plain']),
+  "data": zod.string().min(1).max(analyzeSkillGapBodyTwoResumeDataMax)
+}).optional()
+}))
 
 export const analyzeSkillGapResponseMatchPercentageMin = 0;
 export const analyzeSkillGapResponseMatchPercentageMax = 100;
@@ -57,7 +66,43 @@ export const AnalyzeSkillGapResponse = zod.object({
   "explanation": zod.string()
 })),
   "matchPercentage": zod.number().int().min(analyzeSkillGapResponseMatchPercentageMin).max(analyzeSkillGapResponseMatchPercentageMax),
-  "explanation": zod.string()
+  "explanation": zod.string(),
+  "resumeProfile": zod.object({
+  "skills": zod.array(zod.string()),
+  "projects": zod.array(zod.object({
+  "name": zod.string(),
+  "description": zod.string(),
+  "technologies": zod.array(zod.string())
+})),
+  "experience": zod.array(zod.object({
+  "role": zod.string(),
+  "company": zod.string(),
+  "duration": zod.string(),
+  "highlights": zod.array(zod.string())
+})),
+  "certifications": zod.array(zod.object({
+  "name": zod.string(),
+  "issuer": zod.string(),
+  "year": zod.string()
+})),
+  "education": zod.array(zod.object({
+  "institution": zod.string(),
+  "degree": zod.string(),
+  "field": zod.string(),
+  "year": zod.string()
+}))
+}),
+  "capabilities": zod.array(zod.object({
+  "name": zod.string(),
+  "evidence": zod.string(),
+  "level": zod.enum(['Foundational', 'Working', 'Strong'])
+})),
+  "learningObjectives": zod.array(zod.object({
+  "title": zod.string(),
+  "description": zod.string(),
+  "relatedSkill": zod.string(),
+  "priority": zod.enum(['Critical', 'High', 'Medium', 'Low'])
+}))
 })
 
 
